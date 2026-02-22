@@ -7,10 +7,12 @@ import CategoryGrid from '../components/CategoryGrid';
 import HeroSlider from '../components/HeroSlider';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ProductCard from '../components/ProductCard';
+import { useTranslation } from '../hooks/useTranslation';
 import { fetchCategoriesIfNeeded, fetchProducts } from '../thunks/productThunks';
 
 function HomePage() {
   const dispatch = useDispatch();
+  const { t } = useTranslation();
   const { categories, productList, fetchState } = useSelector((state) => state.product);
 
   useEffect(() => {
@@ -18,11 +20,13 @@ function HomePage() {
     dispatch(fetchProducts({ limit: 8, offset: 0 }));
   }, [dispatch]);
 
-  const topCategories = [...categories].sort((a, b) => b.rating - a.rating).slice(0, 5);
+  const topCategories = [...categories]
+    .sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0))
+    .slice(0, 5);
 
   const handleAddToCart = (product) => {
     dispatch(addItemToCart(product));
-    toast.success('Product added to cart.');
+    toast.success(t('home.addedToCart'));
   };
 
   return (
@@ -31,9 +35,9 @@ function HomePage() {
 
       <section className="space-y-5">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-2xl font-semibold text-ink-900">Top Categories</h2>
+          <h2 className="font-display text-2xl font-semibold text-ink-900">{t('home.topCategories')}</h2>
           <Link to="/shop" className="text-sm font-semibold text-brand-600 hover:text-brand-700">
-            See all categories
+            {t('home.seeAllCategories')}
           </Link>
         </div>
         <CategoryGrid categories={topCategories} />
@@ -41,14 +45,14 @@ function HomePage() {
 
       <section className="space-y-5">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-2xl font-semibold text-ink-900">Featured Products</h2>
+          <h2 className="font-display text-2xl font-semibold text-ink-900">{t('home.featuredProducts')}</h2>
           <Link to="/shop" className="text-sm font-semibold text-brand-600 hover:text-brand-700">
-            Go to shop
+            {t('home.goToShop')}
           </Link>
         </div>
 
         {fetchState === 'FETCHING' && productList.length === 0 ? (
-          <LoadingSpinner label="Products loading..." />
+          <LoadingSpinner label={t('home.productsLoading')} />
         ) : (
           <div className="flex flex-wrap gap-4">
             {productList.map((product) => (

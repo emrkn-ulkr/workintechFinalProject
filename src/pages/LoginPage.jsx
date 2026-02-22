@@ -2,12 +2,14 @@ import { useForm } from 'react-hook-form';
 import { useDispatch } from 'react-redux';
 import { Link, useHistory, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { useTranslation } from '../hooks/useTranslation';
 import { loginUser } from '../thunks/clientThunks';
 
 function LoginPage() {
   const dispatch = useDispatch();
   const history = useHistory();
   const location = useLocation();
+  const { t } = useTranslation();
   const {
     register,
     handleSubmit,
@@ -30,7 +32,7 @@ function LoginPage() {
         }),
       );
 
-      toast.success('Login successful.');
+      toast.success(t('loginPage.success'));
 
       if (location.state?.from?.pathname) {
         history.push(location.state.from.pathname);
@@ -44,22 +46,22 @@ function LoginPage() {
 
   return (
     <section className="mx-auto w-full max-w-md rounded-2xl bg-white p-5 shadow-sm sm:p-8">
-      <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">Login</p>
-      <h1 className="mt-2 font-display text-3xl font-semibold text-ink-900">Welcome back</h1>
+      <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">{t('loginPage.label')}</p>
+      <h1 className="mt-2 font-display text-3xl font-semibold text-ink-900">{t('loginPage.title')}</h1>
 
       <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
         <div>
           <label htmlFor="email" className="mb-1 block text-sm font-medium text-ink-700">
-            Email
+            {t('common.email')}
           </label>
           <input
             id="email"
             type="email"
             {...register('email', {
-              required: 'Email is required.',
+              required: t('loginPage.emailRequired'),
               pattern: {
                 value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                message: 'Please enter a valid email address.',
+                message: t('loginPage.emailInvalid'),
               },
             })}
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
@@ -69,12 +71,12 @@ function LoginPage() {
 
         <div>
           <label htmlFor="password" className="mb-1 block text-sm font-medium text-ink-700">
-            Password
+            {t('common.password')}
           </label>
           <input
             id="password"
             type="password"
-            {...register('password', { required: 'Password is required.' })}
+            {...register('password', { required: t('loginPage.passwordRequired') })}
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
           />
           {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password.message}</p>}
@@ -82,7 +84,7 @@ function LoginPage() {
 
         <label className="inline-flex items-center gap-2 text-sm text-ink-700">
           <input type="checkbox" {...register('rememberMe')} className="h-4 w-4 rounded border-slate-300" />
-          Remember me
+          {t('loginPage.rememberMe')}
         </label>
 
         <button
@@ -90,14 +92,14 @@ function LoginPage() {
           disabled={isSubmitting}
           className="inline-flex w-full items-center justify-center rounded-md bg-brand-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-70"
         >
-          {isSubmitting ? 'Logging in...' : 'Login'}
+          {isSubmitting ? t('loginPage.submitting') : t('common.login')}
         </button>
       </form>
 
       <p className="mt-4 text-xs text-ink-500">
-        No account?
+        {t('loginPage.noAccount')}
         <Link to="/signup" className="ml-1 font-semibold text-brand-600 hover:text-brand-700">
-          Create one
+          {t('loginPage.createOne')}
         </Link>
       </p>
     </section>

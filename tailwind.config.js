@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}'],
   theme: {
     extend: {
@@ -14,6 +15,7 @@ export default {
         ink: {
           900: '#252b42',
           700: '#4f5665',
+          600: '#626b7d',
           500: '#73788c',
         },
       },

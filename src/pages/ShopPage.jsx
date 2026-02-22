@@ -6,12 +6,15 @@ import { setFilter, setOffset } from '../actions/productActions';
 import { addItemToCart } from '../actions/shoppingCartActions';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ProductCard from '../components/ProductCard';
+import { useTranslation } from '../hooks/useTranslation';
 import { fetchCategoriesIfNeeded, fetchProducts } from '../thunks/productThunks';
 import { buildCategoryPath } from '../utils/categoryPaths';
+import { genderSlugToCode, getLocalizedCategoryTitle } from '../utils/categoryUtils';
 
 function ShopPage() {
   const dispatch = useDispatch();
-  const { categoryId } = useParams();
+  const { t, language } = useTranslation();
+  const { categoryId, gender } = useParams();
   const [sort, setSort] = useState('');
   const { categories, productList, total, limit, offset, filter, fetchState } = useSelector((state) => state.product);
 
@@ -41,6 +44,28 @@ function ShopPage() {
     [categories, categoryId],
   );
 
+  const selectedGenderCode = useMemo(() => genderSlugToCode(gender), [gender]);
+
+  const genderLabel = useMemo(() => {
+    if (selectedGenderCode === 'k') {
+      return t('category.women');
+    }
+
+    if (selectedGenderCode === 'e') {
+      return t('category.men');
+    }
+
+    return null;
+  }, [selectedGenderCode, t]);
+
+  const visibleCategories = useMemo(() => {
+    if (!selectedGenderCode) {
+      return categories;
+    }
+
+    return categories.filter((category) => category.gender === selectedGenderCode);
+  }, [categories, selectedGenderCode]);
+
   const hasMore = productList.length < total;
 
   const handleFilterChange = (event) => {
@@ -65,24 +90,26 @@ function ShopPage() {
 
   const handleAddToCart = (product) => {
     dispatch(addItemToCart(product));
-    toast.success('Product added to cart.');
+    toast.success(t('shop.addedToCart'));
   };
+
+  const heading = activeCategory
+    ? t('shop.categoryProducts', { category: getLocalizedCategoryTitle(activeCategory.title, language) })
+    : genderLabel
+      ? t('category.byGenderPrefix', { gender: genderLabel })
+      : t('shop.allProducts');
 
   return (
     <div className="space-y-6">
       <section className="rounded-2xl bg-white p-4 shadow-sm sm:p-5">
-        <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">Shop</p>
-        <h1 className="mt-2 font-display text-2xl font-semibold text-ink-900">
-          {activeCategory ? `${activeCategory.title} Products` : 'All Products'}
-        </h1>
-        <p className="mt-2 text-sm text-ink-500">
-          {total} ürün bulundu. Kategori, sıralama ve filtre birlikte korunarak sorgulanır.
-        </p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-brand-600">{t('shop.label')}</p>
+        <h1 className="mt-2 font-display text-2xl font-semibold text-ink-900">{heading}</h1>
+        <p className="mt-2 text-sm text-ink-500">{t('shop.resultsFound', { count: total })}</p>
       </section>
 
       <section className="flex flex-col gap-6 lg:flex-row">
         <aside className="space-y-4 rounded-2xl bg-white p-4 shadow-sm lg:w-[260px]">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-700">Categories</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-ink-700">{t('common.categories')}</h2>
           <div className="flex flex-wrap gap-2 lg:flex-col">
             <Link
               to="/shop"
@@ -92,9 +119,9 @@ function ShopPage() {
                   : 'border-slate-200 text-ink-700 hover:bg-slate-100'
               }`}
             >
-              All
+              {t('shop.allCategories')}
             </Link>
-            {categories.map((category) => (
+            {visibleCategories.map((category) => (
               <Link
                 key={category.id}
                 to={buildCategoryPath(category)}
@@ -104,7 +131,7 @@ function ShopPage() {
                     : 'border-slate-200 text-ink-700 hover:bg-slate-100'
                 }`}
               >
-                {category.title}
+                {getLocalizedCategoryTitle(category.title, language)}
               </Link>
             ))}
           </div>
@@ -117,7 +144,7 @@ function ShopPage() {
                 value={filter}
                 onChange={handleFilterChange}
                 type="text"
-                placeholder="Filter products..."
+                placeholder={t('shop.filterPlaceholder')}
                 className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100 sm:flex-1"
               />
               <select
@@ -125,11 +152,11 @@ function ShopPage() {
                 onChange={handleSortChange}
                 className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100 sm:w-[220px]"
               >
-                <option value="">Sort by</option>
-                <option value="price:asc">price:asc</option>
-                <option value="price:desc">price:desc</option>
-                <option value="rating:asc">rating:asc</option>
-                <option value="rating:desc">rating:desc</option>
+                <option value="">{t('shop.sortBy')}</option>
+                <option value="price:asc">{t('shop.sortPriceAsc')}</option>
+                <option value="price:desc">{t('shop.sortPriceDesc')}</option>
+                <option value="rating:asc">{t('shop.sortRatingAsc')}</option>
+                <option value="rating:desc">{t('shop.sortRatingDesc')}</option>
               </select>
             </div>
             <button
@@ -137,12 +164,12 @@ function ShopPage() {
               onClick={handleClearFilters}
               className="mt-3 rounded-md border border-slate-300 px-3 py-1.5 text-xs font-semibold text-ink-700 hover:bg-slate-100"
             >
-              Clear filters
+              {t('shop.clearFilters')}
             </button>
           </div>
 
           {fetchState === 'FETCHING' && productList.length === 0 ? (
-            <LoadingSpinner label="Products loading..." />
+            <LoadingSpinner label={t('shop.productsLoading')} />
           ) : (
             <div className="flex flex-wrap gap-4">
               {productList.map((product) => (
@@ -159,7 +186,7 @@ function ShopPage() {
               onClick={handleLoadMore}
               className="w-full rounded-md border border-brand-500 px-4 py-3 text-sm font-semibold text-brand-600 transition hover:bg-brand-50"
             >
-              Load more products
+              {t('shop.loadMoreProducts')}
             </button>
           )}
         </div>

@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: workintech-final-project
+    env: static
+    buildCommand: npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+

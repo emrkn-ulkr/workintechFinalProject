@@ -1,8 +1,15 @@
 import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { Route, Switch } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
+import { setLanguage, setTheme } from './actions/clientActions';
 import ProtectedRoute from './components/ProtectedRoute';
+import {
+  LANGUAGE_STORAGE_KEY,
+  SUPPORTED_LANGUAGES,
+  SUPPORTED_THEMES,
+  THEME_STORAGE_KEY,
+} from './constants/preferences';
 import Footer from './layout/Footer';
 import Header from './layout/Header';
 import PageContent from './layout/PageContent';
@@ -24,14 +31,39 @@ import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
   const dispatch = useDispatch();
+  const { theme, language } = useSelector((state) => state.client);
+
+  useEffect(() => {
+    const storedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+    const storedLanguage = localStorage.getItem(LANGUAGE_STORAGE_KEY);
+
+    if (storedTheme && SUPPORTED_THEMES.includes(storedTheme)) {
+      dispatch(setTheme(storedTheme));
+    }
+
+    if (storedLanguage && SUPPORTED_LANGUAGES.includes(storedLanguage)) {
+      dispatch(setLanguage(storedLanguage));
+    }
+  }, [dispatch]);
 
   useEffect(() => {
     dispatch(verifyTokenFromStorage());
     dispatch(fetchCategoriesIfNeeded());
   }, [dispatch]);
 
+  useEffect(() => {
+    const isDark = theme === 'dark';
+    document.documentElement.classList.toggle('dark', isDark);
+    document.documentElement.style.colorScheme = isDark ? 'dark' : 'light';
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  }, [theme]);
+
+  useEffect(() => {
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+  }, [language]);
+
   return (
-    <div className="flex min-h-screen flex-col bg-slate-50">
+    <div className="flex min-h-screen flex-col bg-slate-50 dark:bg-slate-950">
       <Header />
       <PageContent>
         <Switch>
@@ -41,6 +73,7 @@ function App() {
             path="/shop/:gender/:categoryName/:categoryId/:productNameSlug/:productId"
             component={ProductDetailPage}
           />
+          <Route exact path="/shop/:gender" component={ShopPage} />
           <Route exact path="/shop/:gender/:categoryName/:categoryId" component={ShopPage} />
           <Route exact path="/shop" component={ShopPage} />
           <Route exact path="/product/:productId" component={ProductDetailPage} />
@@ -56,7 +89,7 @@ function App() {
         </Switch>
       </PageContent>
       <Footer />
-      <ToastContainer position="top-right" autoClose={3200} />
+      <ToastContainer position="top-right" autoClose={3200} theme={theme === 'dark' ? 'dark' : 'light'} />
     </div>
   );
 }

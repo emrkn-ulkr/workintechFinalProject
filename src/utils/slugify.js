@@ -1,24 +1,18 @@
 const TURKISH_CHAR_MAP = {
-  ç: 'c',
-  Ç: 'c',
-  ğ: 'g',
-  Ğ: 'g',
-  ı: 'i',
-  İ: 'i',
-  ö: 'o',
-  Ö: 'o',
-  ş: 's',
-  Ş: 's',
-  ü: 'u',
-  Ü: 'u',
+  '\u00e7': 'c',
+  '\u011f': 'g',
+  '\u0131': 'i',
+  '\u00f6': 'o',
+  '\u015f': 's',
+  '\u00fc': 'u',
 };
 
 export const slugify = (value = '') =>
-  value
+  String(value)
     .trim()
+    .toLocaleLowerCase('tr')
     .split('')
     .map((character) => TURKISH_CHAR_MAP[character] || character)
     .join('')
-    .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '');

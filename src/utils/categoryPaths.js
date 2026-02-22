@@ -1,6 +1,19 @@
+import { normalizeGenderCode } from './categoryUtils';
 import { slugify } from './slugify';
 
-export const genderCodeToSlug = (genderCode = 'e') => (genderCode === 'k' ? 'kadin' : 'erkek');
+export const genderCodeToSlug = (genderCode = '') => {
+  const normalized = normalizeGenderCode(genderCode);
+
+  if (normalized === 'k') {
+    return 'kadin';
+  }
+
+  if (normalized === 'e') {
+    return 'erkek';
+  }
+
+  return 'unisex';
+};
 
 export const buildCategoryPath = (category) => {
   if (!category) {

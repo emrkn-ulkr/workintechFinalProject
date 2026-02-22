@@ -1,5 +1,6 @@
 import axiosInstance from '../api/axiosInstance';
 import { setCategories, setFetchState, setProductList, setTotal } from '../actions/productActions';
+import { normalizeAndSortCategories } from '../utils/categoryUtils';
 
 const appendQuery = ({ category, filter, sort, limit, offset }) => {
   const params = new URLSearchParams();
@@ -34,8 +35,9 @@ export const fetchCategoriesIfNeeded = () => async (dispatch, getState) => {
   }
 
   const { data } = await axiosInstance.get('/categories');
-  dispatch(setCategories(data));
-  return data;
+  const normalizedCategories = normalizeAndSortCategories(Array.isArray(data) ? data : []);
+  dispatch(setCategories(normalizedCategories));
+  return normalizedCategories;
 };
 
 export const fetchProducts = (options = {}) => async (dispatch, getState) => {

@@ -20,6 +20,13 @@ npm install
 npm run dev
 ```
 
+## Deployment
+
+- Vercel / Render / Netlify deployment is supported for static build output.
+- Build command: `npm run build`
+- Publish directory: `dist`
+- Add your live URL here after deployment: `YOUR_LIVE_URL`
+
 ## Quality Checks
 
 ```bash
@@ -31,6 +38,11 @@ npm run build
 
 - Base URL: `https://workintech-fe-ecommerce.onrender.com`
 - Auth header format: `Authorization: <token>` (without `Bearer`)
+
+## Postman
+
+- Collection file: `postman/WorkintechFinalProject.postman_collection.json`
+- Import the collection and set `token` variable after login.
 
 ## Implemented Structure
 
