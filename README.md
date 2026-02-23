@@ -20,6 +20,18 @@ npm install
 npm run dev
 ```
 
+## Environment
+
+Create a local `.env` file from `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
+Available variables:
+
+- `VITE_API_BASE_URL` (default: `https://workintech-fe-ecommerce.onrender.com`)
+
 ## Deployment
 
 - Vercel / Render / Netlify deployment is supported for static build output.
@@ -32,6 +44,8 @@ npm run dev
 ```bash
 npm run lint
 npm run build
+npm run security:audit
+npm run check:release
 ```
 
 ## API
@@ -71,8 +85,17 @@ src/
 - Shopping cart page and order summary box
 - Protected route scaffolding for checkout and previous orders
 
-## Demo Login Users
+## Demo Login Users (Demo Backend Only)
 
 - `customer@commerce.com` / `123456`
 - `store@commerce.com` / `123456`
 - `admin@commerce.com` / `123456`
+
+Use these only for demo API/testing. Do not use in production.
+
+## Public Release Checklist
+
+- Keep `.env` files private (never commit `.env` / secret keys).
+- Run `npm run check:release` before each deploy.
+- Ensure hosting uses HTTPS and security headers (Netlify/Vercel configs included).
+- Verify your production API URL is set with `VITE_API_BASE_URL`.
