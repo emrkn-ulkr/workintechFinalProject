@@ -17,6 +17,10 @@ const CATEGORY_LABELS = {
   skirt: { tr: 'Etek', en: 'Skirt' },
   skirts: { tr: 'Etek', en: 'Skirts' },
   pants: { tr: 'Pantolon', en: 'Pants' },
+  pantolon: { tr: 'Pantolon', en: 'Trousers' },
+  pantolons: { tr: 'Pantolon', en: 'Trousers' },
+  pantalon: { tr: 'Pantolon', en: 'Trousers' },
+  pantalons: { tr: 'Pantolon', en: 'Trousers' },
   trouser: { tr: 'Pantolon', en: 'Trouser' },
   trousers: { tr: 'Pantolon', en: 'Trousers' },
   jeans: { tr: 'Jean', en: 'Jeans' },
@@ -101,4 +105,3 @@ export const getLocalizedCategoryTitle = (categoryTitle = '', language = 'tr') =
   const localized = CATEGORY_LABELS[slug]?.[language];
   return localized || categoryTitle;
 };
-

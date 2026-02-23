@@ -66,6 +66,29 @@ function ShopPage() {
     return categories.filter((category) => category.gender === selectedGenderCode);
   }, [categories, selectedGenderCode]);
 
+  const categoryLabelCountMap = useMemo(() => {
+    const counts = {};
+
+    for (const category of visibleCategories) {
+      const label = getLocalizedCategoryTitle(category.title, language);
+      counts[label] = (counts[label] || 0) + 1;
+    }
+
+    return counts;
+  }, [visibleCategories, language]);
+
+  const getCategoryGenderLabel = (genderCode) => {
+    if (genderCode === 'k') {
+      return t('category.women');
+    }
+
+    if (genderCode === 'e') {
+      return t('category.men');
+    }
+
+    return t('category.unisex');
+  };
+
   const hasMore = productList.length < total;
 
   const handleFilterChange = (event) => {
@@ -121,19 +144,27 @@ function ShopPage() {
             >
               {t('shop.allCategories')}
             </Link>
-            {visibleCategories.map((category) => (
-              <Link
-                key={category.id}
-                to={buildCategoryPath(category)}
-                className={`rounded-md border px-3 py-2 text-xs font-medium transition ${
-                  String(category.id) === String(categoryId)
-                    ? 'border-brand-500 bg-brand-50 text-brand-700'
-                    : 'border-slate-200 text-ink-700 hover:bg-slate-100'
-                }`}
-              >
-                {getLocalizedCategoryTitle(category.title, language)}
-              </Link>
-            ))}
+            {visibleCategories.map((category) => {
+              const localizedTitle = getLocalizedCategoryTitle(category.title, language);
+              const showGenderPrefix = (categoryLabelCountMap[localizedTitle] || 0) > 1;
+              const categoryLabel = showGenderPrefix
+                ? `${getCategoryGenderLabel(category.gender)} - ${localizedTitle}`
+                : localizedTitle;
+
+              return (
+                <Link
+                  key={category.id}
+                  to={buildCategoryPath(category)}
+                  className={`rounded-md border px-3 py-2 text-xs font-medium transition ${
+                    String(category.id) === String(categoryId)
+                      ? 'border-brand-500 bg-brand-50 text-brand-700'
+                      : 'border-slate-200 text-ink-700 hover:bg-slate-100'
+                  }`}
+                >
+                  {categoryLabel}
+                </Link>
+              );
+            })}
           </div>
         </aside>
 
@@ -170,6 +201,10 @@ function ShopPage() {
 
           {fetchState === 'FETCHING' && productList.length === 0 ? (
             <LoadingSpinner label={t('shop.productsLoading')} />
+          ) : productList.length === 0 ? (
+            <section className="rounded-2xl bg-white p-6 text-center text-sm text-ink-500 shadow-sm">
+              {t('shop.noProducts')}
+            </section>
           ) : (
             <div className="flex flex-wrap gap-4">
               {productList.map((product) => (

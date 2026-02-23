@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -8,21 +8,64 @@ import HeroSlider from '../components/HeroSlider';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ProductCard from '../components/ProductCard';
 import { useTranslation } from '../hooks/useTranslation';
-import { fetchCategoriesIfNeeded, fetchProducts } from '../thunks/productThunks';
+import { fetchCategoriesIfNeeded, fetchCategoryProductsTotal, fetchProducts } from '../thunks/productThunks';
 
 function HomePage() {
   const dispatch = useDispatch();
   const { t } = useTranslation();
   const { categories, productList, fetchState } = useSelector((state) => state.product);
+  const [topCategories, setTopCategories] = useState([]);
+  const [topCategoriesLoading, setTopCategoriesLoading] = useState(false);
 
   useEffect(() => {
     dispatch(fetchCategoriesIfNeeded());
     dispatch(fetchProducts({ limit: 8, offset: 0 }));
   }, [dispatch]);
 
-  const topCategories = [...categories]
-    .sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0))
-    .slice(0, 5);
+  useEffect(() => {
+    let cancelled = false;
+
+    const resolveTopCategories = async () => {
+      if (!categories.length) {
+        setTopCategories([]);
+        setTopCategoriesLoading(false);
+        return;
+      }
+
+      setTopCategoriesLoading(true);
+
+      const sortedCategories = [...categories].sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0));
+      const categoriesWithProducts = [];
+
+      for (const category of sortedCategories) {
+        try {
+          const total = await fetchCategoryProductsTotal(category.id);
+          if (total > 0) {
+            categoriesWithProducts.push(category);
+          }
+        } catch {
+          // Skip category total check failure and continue with next candidate.
+        }
+
+        if (categoriesWithProducts.length >= 5) {
+          break;
+        }
+      }
+
+      const fallbackTopCategories = sortedCategories.slice(0, 5);
+
+      if (!cancelled) {
+        setTopCategories(categoriesWithProducts.length ? categoriesWithProducts : fallbackTopCategories);
+        setTopCategoriesLoading(false);
+      }
+    };
+
+    resolveTopCategories();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [categories]);
 
   const handleAddToCart = (product) => {
     dispatch(addItemToCart(product));
@@ -40,7 +83,7 @@ function HomePage() {
             {t('home.seeAllCategories')}
           </Link>
         </div>
-        <CategoryGrid categories={topCategories} />
+        {topCategoriesLoading ? <LoadingSpinner label={t('home.productsLoading')} /> : <CategoryGrid categories={topCategories} />}
       </section>
 
       <section className="space-y-5">

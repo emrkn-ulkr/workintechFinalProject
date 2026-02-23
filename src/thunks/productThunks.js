@@ -40,6 +40,13 @@ export const fetchCategoriesIfNeeded = () => async (dispatch, getState) => {
   return normalizedCategories;
 };
 
+export const fetchCategoryProductsTotal = async (categoryId) => {
+  const queryString = appendQuery({ category: categoryId, limit: 1, offset: 0 });
+  const url = queryString ? `/products?${queryString}` : '/products';
+  const { data } = await axiosInstance.get(url);
+  return Number(data?.total || 0);
+};
+
 export const fetchProducts = (options = {}) => async (dispatch, getState) => {
   const state = getState().product;
   const query = {

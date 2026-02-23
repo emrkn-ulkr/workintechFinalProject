@@ -1,101 +1,197 @@
-# Workintech Final Project
+﻿# WT Store - Workintech Final Project
 
-E-commerce frontend project built with the teacher requirement stack and Figma-based layout approach.
+Modern bir e-ticaret frontend uygulamasi. Proje, Workintech final gereksinimlerine uygun olarak React + Vite altyapisinda, mobile-first yaklasimla gelistirilmistir.
 
-## Stack
+## Icerik
 
-- React + Vite
-- React Router v5
-- Redux (vanilla) + Redux Thunk + Redux Logger
-- Tailwind CSS (utility-first, mobile-first)
+- [Proje Ozeti](#proje-ozeti)
+- [Ozellikler](#ozellikler)
+- [Teknoloji Yigini](#teknoloji-yigini)
+- [Kurulum](#kurulum)
+- [Ortam Degiskenleri](#ortam-degiskenleri)
+- [Calistirma Komutlari](#calistirma-komutlari)
+- [Proje Yapisi](#proje-yapisi)
+- [Sayfalar ve Akis](#sayfalar-ve-akis)
+- [API Bilgisi](#api-bilgisi)
+- [Deployment](#deployment)
+- [Guvenlik ve Release Kontrolu](#guvenlik-ve-release-kontrolu)
+- [Postman](#postman)
+- [Demo Hesaplar](#demo-hesaplar)
+- [SSS](#sss)
+
+## Proje Ozeti
+
+Bu uygulama bir e-ticaret vitrini ve siparis akisi sunar. Kullanici;
+
+- urunleri listeleyebilir,
+- kategori, filtre ve siralama ile arama yapabilir,
+- urun detayi gorebilir,
+- sepete urun ekleyebilir,
+- giris/kayit islemleri sonrasi siparis olusturabilir,
+- gecmis siparislerini gorebilir.
+
+## Ozellikler
+
+- React Router v5 ile route tabanli sayfa yapisi
+- Redux + Thunk ile global state yonetimi
+- Kategori, urun, filtre, siralama ve sayfalama (load more)
+- Giris/Kayit akisi ve token dogrulama
+- Korumali rotalar (`/checkout`, `/orders`)
+- Sepet, adres, kart ve siparis olusturma akisi
+- TR/EN dil destegi
+- Theme (light/dark) tercihi
+- Responsive tasarim
+
+## Teknoloji Yigini
+
+- React 18
+- Vite 7
+- React Router DOM 5
+- Redux, Redux Thunk, Redux Logger
 - Axios
 - React Hook Form
 - React Toastify
-- Lucide React
+- Tailwind CSS
+- ESLint
 
-## Run
+## Kurulum
+
+### Gereksinimler
+
+- Node.js 18+
+- npm 9+
+
+### Adimlar
 
 ```bash
 npm install
+```
+
+```bash
 npm run dev
 ```
 
-## Environment
+Uygulama varsayilan olarak Vite gelistirme sunucusu uzerinden calisir.
 
-Create a local `.env` file from `.env.example`:
+## Ortam Degiskenleri
+
+`.env.example` dosyasini kopyalayip `.env` olusturun.
+
+Mac/Linux:
 
 ```bash
 cp .env.example .env
 ```
 
-Available variables:
+Windows PowerShell:
 
-- `VITE_API_BASE_URL` (default: `https://workintech-fe-ecommerce.onrender.com`)
-
-## Deployment
-
-- Vercel / Render / Netlify deployment is supported for static build output.
-- Build command: `npm run build`
-- Publish directory: `dist`
-- Add your live URL here after deployment: `YOUR_LIVE_URL`
-
-## Quality Checks
-
-```bash
-npm run lint
-npm run build
-npm run security:audit
-npm run check:release
+```powershell
+Copy-Item .env.example .env
 ```
 
-## API
+Kullanilan degiskenler:
 
-- Base URL: `https://workintech-fe-ecommerce.onrender.com`
-- Auth header format: `Authorization: <token>` (without `Bearer`)
+- `VITE_API_BASE_URL`: API base URL (varsayilan: `https://workintech-fe-ecommerce.onrender.com`)
 
-## Postman
+## Calistirma Komutlari
 
-- Collection file: `postman/WorkintechFinalProject.postman_collection.json`
-- Import the collection and set `token` variable after login.
+- `npm run dev`: Gelistirme sunucusunu baslatir.
+- `npm run build`: Production build alir.
+- `npm run preview`: Build cikisini localde onizler.
+- `npm run lint`: ESLint kurallarini calistirir.
+- `npm run security:audit`: Production bagimliliklari icin guvenlik taramasi yapar.
+- `npm run check:release`: Lint + Build + Security audit birlikte calisir.
 
-## Implemented Structure
+## Proje Yapisi
 
 ```text
 src/
-  actions/
-  api/
-  components/
-  layout/
-  pages/
-  reducers/
-  store/
-  thunks/
-  utils/
+  actions/       # Redux action creator'lar
+  api/           # Axios instance ve API yardimcilari
+  components/    # Tekrar kullanilabilir UI bilesenleri
+  constants/     # Sabitler
+  hooks/         # Custom hook'lar
+  i18n/          # Dil metinleri
+  layout/        # Header/Footer ve sayfa iskeleti
+  pages/         # Route seviyesinde sayfalar
+  reducers/      # Redux reducer'lar
+  store/         # Store kurulumu
+  thunks/        # Asenkron is akislari
+  utils/         # Yardimci fonksiyonlar
 ```
 
-## Current Coverage
+## Sayfalar ve Akis
 
-- Project setup and dependencies (T01)
-- Shared layout with single Header/Footer and router shell
-- Home / Shop / Product Detail / Contact / Team / About pages (responsive)
-- Signup form with role-based store fields and API integration
-- Login form with remember-me + auto token verify
-- Categories + products fetch, filter, sort, pagination(load more)
-- Product detail fetch and add-to-cart flow
-- Shopping cart page and order summary box
-- Protected route scaffolding for checkout and previous orders
+- `/` Ana sayfa
+- `/shop` Magaza
+- `/shop/:gender/:categoryName/:categoryId` Kategori bazli liste
+- `/shop/:gender/:categoryName/:categoryId/:productNameSlug/:productId` Urun detayi
+- `/product/:productId` Alternatif urun detay rotasi
+- `/signup` Kayit
+- `/login` Giris
+- `/cart` Sepet
+- `/checkout` Siparis olusturma (protected)
+- `/orders` Gecmis siparisler (protected)
 
-## Demo Login Users (Demo Backend Only)
+## API Bilgisi
+
+- Base URL: `https://workintech-fe-ecommerce.onrender.com`
+- Auth header formati: `Authorization: <token>` (`Bearer` prefix kullanilmiyor)
+
+## Deployment
+
+Proje statik olarak deploy edilebilir.
+
+- Vercel
+- Netlify
+- Render (static)
+
+Build ayari:
+
+- Build command: `npm run build`
+- Publish directory: `dist`
+
+Not: Repo icinde `netlify.toml`, `vercel.json` ve `render.yaml` dosyalari hazirdir.
+
+## Guvenlik ve Release Kontrolu
+
+Public yayin oncesi onerilen adimlar:
+
+1. `npm run check:release` calistir.
+2. `.env` ve benzeri secret dosyalarinin commit edilmedigini kontrol et.
+3. Production ortaminda `VITE_API_BASE_URL` degerini dogrula.
+4. HTTPS ve security header ayarlarinin aktif oldugunu dogrula.
+
+## Postman
+
+Postman collection dosyasi:
+
+- `postman/WorkintechFinalProject.postman_collection.json`
+
+Kullanim:
+
+1. Collection'i import et.
+2. `baseUrl` degiskenini kontrol et.
+3. Login istegi sonrasi `token` degiskenini set et.
+
+## Demo Hesaplar
+
+Sadece demo backend/test amaclidir:
 
 - `customer@commerce.com` / `123456`
 - `store@commerce.com` / `123456`
 - `admin@commerce.com` / `123456`
 
-Use these only for demo API/testing. Do not use in production.
+## SSS
 
-## Public Release Checklist
+### Ayni kategori neden birden fazla gorunebiliyor?
 
-- Keep `.env` files private (never commit `.env` / secret keys).
-- Run `npm run check:release` before each deploy.
-- Ensure hosting uses HTTPS and security headers (Netlify/Vercel configs included).
-- Verify your production API URL is set with `VITE_API_BASE_URL`.
+Backend tarafinda bazi kategoriler cinsiyete gore ayri kayit olarak tutulur (ornegin kadin/erkek ayni kategori adi). Bu nedenle listede benzer adlar gorulebilir.
+
+### Populer kategoriye tiklayinca neden bazen bos urun gelebiliyordu?
+
+Bazi kategori kayitlarinda urun sayisi `0` olabiliyor. Populer kategori secimi bu duruma gore duzenlendi ve urunu olan kategoriler onceliklendirildi.
+
+---
+
+Bu proje egitim amacli gelistirilmistir.

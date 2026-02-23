@@ -106,6 +106,7 @@ export const translations = {
       sortRatingAsc: 'Puan (artan)',
       sortRatingDesc: 'Puan (azalan)',
       allCategories: 'Tum kategoriler',
+      noProducts: 'Bu kategoride urun bulunamadi.',
     },
     productCard: {
       noImage: 'Gorsel Yok',
@@ -406,6 +407,7 @@ export const translations = {
       sortRatingAsc: 'Rating (ascending)',
       sortRatingDesc: 'Rating (descending)',
       allCategories: 'All categories',
+      noProducts: 'No products were found in this category.',
     },
     productCard: {
       noImage: 'No Image',
