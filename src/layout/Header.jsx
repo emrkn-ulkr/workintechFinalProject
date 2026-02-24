@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { ChevronDown, LogOut, Menu, ShoppingCart, SunMoon, UserRound, X } from 'lucide-react';
-import { Link, NavLink, useHistory } from 'react-router-dom';
+import { Link, NavLink, useHistory, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { setLanguage, setTheme } from '../actions/clientActions';
 import { useTranslation } from '../hooks/useTranslation';
@@ -13,6 +13,7 @@ import { getGravatarUrl } from '../utils/gravatar';
 function Header() {
   const dispatch = useDispatch();
   const history = useHistory();
+  const location = useLocation();
   const { t, language } = useTranslation();
   const { categories } = useSelector((state) => state.product);
   const { cart } = useSelector((state) => state.shoppingCart);
@@ -194,7 +195,7 @@ function Header() {
               </div>
             ) : (
               <Link
-                to="/login"
+                to={{ pathname: '/login', state: { from: location } }}
                 className="hidden items-center gap-2 rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-ink-800 transition hover:bg-slate-50 sm:inline-flex"
               >
                 <UserRound className="h-4 w-4" />
@@ -287,7 +288,7 @@ function Header() {
               </button>
             ) : (
               <Link
-                to="/login"
+                to={{ pathname: '/login', state: { from: location } }}
                 onClick={() => setMobileOpen(false)}
                 className="inline-flex items-center gap-2 rounded-md border border-slate-200 px-3 py-2 text-sm font-semibold text-ink-800"
               >

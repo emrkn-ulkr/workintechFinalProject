@@ -2,12 +2,40 @@ import axiosInstance, { setAuthToken } from '../api/axiosInstance';
 import { setAddressList, setCreditCards, setRoles, setUser } from '../actions/clientActions';
 
 const TOKEN_KEY = 'token';
+const DUPLICATE_RECORD_CODE = 'SQLITE_CONSTRAINT';
 
-const extractMessage = (error, fallback) =>
-  error.response?.data?.message ||
-  error.response?.data?.error ||
-  error.response?.data?.[0]?.message ||
-  fallback;
+const extractMessage = (error, fallback) => {
+  const responseData = error.response?.data;
+
+  if (typeof responseData?.message === 'string' && responseData.message.trim()) {
+    return responseData.message;
+  }
+
+  if (Array.isArray(responseData) && typeof responseData[0]?.message === 'string') {
+    return responseData[0].message;
+  }
+
+  if (Array.isArray(responseData?.errors) && typeof responseData.errors[0]?.message === 'string') {
+    return responseData.errors[0].message;
+  }
+
+  if (
+    responseData?.err?.code === DUPLICATE_RECORD_CODE ||
+    (responseData?.error === 'An error occurred' && responseData?.err?.code === DUPLICATE_RECORD_CODE)
+  ) {
+    return 'This email is already registered.';
+  }
+
+  if (typeof responseData?.error === 'string' && responseData.error.trim()) {
+    return responseData.error;
+  }
+
+  if (typeof error.message === 'string' && error.message.trim()) {
+    return error.message;
+  }
+
+  return fallback;
+};
 
 const extractList = (data, keys = []) => {
   if (Array.isArray(data)) {
@@ -29,9 +57,14 @@ export const fetchRolesIfNeeded = () => async (dispatch, getState) => {
     return roles;
   }
 
-  const { data } = await axiosInstance.get('/roles');
-  dispatch(setRoles(data));
-  return data;
+  try {
+    const { data } = await axiosInstance.get('/roles');
+    const roleList = Array.isArray(data) ? data : [];
+    dispatch(setRoles(roleList));
+    return roleList;
+  } catch (error) {
+    throw new Error(extractMessage(error, 'Roles could not be fetched.'));
+  }
 };
 
 export const signupUser = (payload) => async () => {
@@ -44,6 +77,8 @@ export const signupUser = (payload) => async () => {
 };
 
 export const loginUser = ({ email, password, rememberMe = false }) => async (dispatch) => {
+  const previousToken = axiosInstance.defaults.headers.common.Authorization;
+
   try {
     // Login endpoint must be called without stale Authorization header.
     setAuthToken(null);
@@ -60,6 +95,9 @@ export const loginUser = ({ email, password, rememberMe = false }) => async (dis
 
     return data;
   } catch (error) {
+    if (previousToken) {
+      setAuthToken(previousToken);
+    }
     throw new Error(extractMessage(error, 'Email or password is incorrect.'));
   }
 };

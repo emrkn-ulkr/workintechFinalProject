@@ -1,7 +1,8 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from '../hooks/useTranslation';
 
 function Footer() {
+  const location = useLocation();
   const { t } = useTranslation();
 
   return (
@@ -23,8 +24,8 @@ function Footer() {
         <div className="w-full sm:w-[calc(50%-1rem)] lg:w-[calc(25%-1.5rem)]">
           <h4 className="text-sm font-semibold uppercase tracking-wide text-ink-700">{t('footer.account')}</h4>
           <div className="mt-3 flex flex-col gap-2 text-sm text-ink-500">
-            <Link to="/signup">{t('common.signup')}</Link>
-            <Link to="/login">{t('common.login')}</Link>
+            <Link to={{ pathname: '/signup', state: { from: location } }}>{t('common.signup')}</Link>
+            <Link to={{ pathname: '/login', state: { from: location } }}>{t('common.login')}</Link>
             <Link to="/cart">{t('common.cart')}</Link>
             <Link to="/orders">{t('common.previousOrders')}</Link>
           </div>

@@ -34,8 +34,8 @@ function LoginPage() {
 
       toast.success(t('loginPage.success'));
 
-      if (location.state?.from?.pathname) {
-        history.push(location.state.from.pathname);
+      if (location.state?.from) {
+        history.push(location.state.from);
       } else {
         history.push('/');
       }
@@ -98,7 +98,10 @@ function LoginPage() {
 
       <p className="mt-4 text-xs text-ink-500">
         {t('loginPage.noAccount')}
-        <Link to="/signup" className="ml-1 font-semibold text-brand-600 hover:text-brand-700">
+        <Link
+          to={{ pathname: '/signup', state: { from: location.state?.from || location } }}
+          className="ml-1 font-semibold text-brand-600 hover:text-brand-700"
+        >
           {t('loginPage.createOne')}
         </Link>
       </p>

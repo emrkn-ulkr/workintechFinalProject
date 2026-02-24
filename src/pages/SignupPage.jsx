@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import { LoaderCircle } from 'lucide-react';
@@ -8,8 +8,46 @@ import { useTranslation } from '../hooks/useTranslation';
 import { fetchRolesIfNeeded, signupUser } from '../thunks/clientThunks';
 
 const passwordPattern = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^A-Za-z0-9]).{8,}$/;
-const phonePattern = /^(?:\+?90|0)?5\d{9}$/;
 const taxPattern = /^T\d{4}V\d{6}$/i;
+const normalizeIban = (value) => value.replace(/\s+/g, '').toUpperCase();
+const normalizePhone = (value) => value.replace(/\D+/g, '');
+
+const isValidTurkiyePhone = (value) => {
+  const normalized = normalizePhone(value);
+  return /^(90)?5\d{9}$/.test(normalized) || /^0?5\d{9}$/.test(normalized);
+};
+
+const toApiPhone = (value) => {
+  const normalized = normalizePhone(value);
+
+  if (normalized.startsWith('90')) {
+    return `0${normalized.slice(2)}`;
+  }
+
+  if (normalized.startsWith('5')) {
+    return `0${normalized}`;
+  }
+
+  return normalized;
+};
+
+const isValidTrIban = (value) => {
+  const normalized = normalizeIban(value);
+
+  if (!/^TR\d{24}$/.test(normalized)) {
+    return false;
+  }
+
+  const rearranged = `${normalized.slice(4)}${normalized.slice(0, 4)}`;
+  const expanded = rearranged.replace(/[A-Z]/g, (letter) => String(letter.charCodeAt(0) - 55));
+
+  let remainder = 0;
+  for (const digit of expanded) {
+    remainder = (remainder * 10 + Number(digit)) % 97;
+  }
+
+  return remainder === 1;
+};
 
 function SignupPage() {
   const dispatch = useDispatch();
@@ -17,6 +55,7 @@ function SignupPage() {
   const location = useLocation();
   const { t } = useTranslation();
   const roles = useSelector((state) => state.client.roles);
+  const [isRolesLoading, setIsRolesLoading] = useState(true);
   const {
     control,
     register,
@@ -47,32 +86,64 @@ function SignupPage() {
   const isStore = selectedRole?.code === 'store';
 
   useEffect(() => {
-    dispatch(fetchRolesIfNeeded());
+    let isMounted = true;
+
+    const loadRoles = async () => {
+      setIsRolesLoading(true);
+      try {
+        await dispatch(fetchRolesIfNeeded());
+      } catch (error) {
+        toast.error(error.message);
+      } finally {
+        if (isMounted) {
+          setIsRolesLoading(false);
+        }
+      }
+    };
+
+    loadRoles();
+
+    return () => {
+      isMounted = false;
+    };
   }, [dispatch]);
 
   useEffect(() => {
-    if (roles.length > 0 && !selectedRoleId) {
-      const customerRole = roles.find((role) => role.code === 'customer');
-      if (customerRole) {
-        setValue('role_id', String(customerRole.id));
-      }
+    if (roles.length === 0 || selectedRoleId) {
+      return;
+    }
+
+    const customerRole = roles.find((role) => role.code === 'customer');
+    const fallbackRole = customerRole || roles[0];
+
+    if (fallbackRole) {
+      setValue('role_id', String(fallbackRole.id), { shouldValidate: true });
     }
   }, [roles, selectedRoleId, setValue]);
 
   const onSubmit = async (formValues) => {
+    const parsedRoleId = Number(formValues.role_id);
+    const submittedRole = roles.find((role) => Number(role.id) === parsedRoleId);
+    const isStoreRole = submittedRole?.code === 'store';
+
+    if (!parsedRoleId || !submittedRole) {
+      toast.error(t('signupPage.roleRequired'));
+      return;
+    }
+
     const payload = {
       name: formValues.name.trim(),
       email: formValues.email.trim().toLowerCase(),
       password: formValues.password,
-      role_id: Number(formValues.role_id),
+      role_id: parsedRoleId,
     };
 
-    if (isStore) {
+    if (isStoreRole) {
       payload.store = {
         name: formValues.store.name.trim(),
-        phone: formValues.store.phone.trim(),
+        phone: toApiPhone(formValues.store.phone),
         tax_no: formValues.store.tax_no.trim().toUpperCase(),
-        bank_account: formValues.store.bank_account.replace(/\s+/g, '').toUpperCase(),
+        bank_account: normalizeIban(formValues.store.bank_account),
       };
     }
 
@@ -149,6 +220,7 @@ function SignupPage() {
             })}
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
           />
+          <p className="mt-1 text-xs text-ink-500">{t('signupPage.passwordRule')}</p>
           {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password.message}</p>}
         </div>
 
@@ -175,8 +247,11 @@ function SignupPage() {
           <select
             id="role_id"
             {...register('role_id', { required: t('signupPage.roleRequired') })}
+            disabled={isRolesLoading || roles.length === 0}
             className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
           >
+            {isRolesLoading && <option value="">{t('common.loading')}</option>}
+            {!isRolesLoading && roles.length === 0 && <option value="">{t('signupPage.roleUnavailable')}</option>}
             {roles.map((role) => (
               <option key={role.id} value={role.id}>
                 {role.name}
@@ -215,10 +290,7 @@ function SignupPage() {
                 type="text"
                 {...register('store.phone', {
                   required: t('signupPage.storePhoneRequired'),
-                  pattern: {
-                    value: phonePattern,
-                    message: t('signupPage.storePhoneInvalid'),
-                  },
+                  validate: (value) => isValidTurkiyePhone(value) || t('signupPage.storePhoneInvalid'),
                 })}
                 className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
               />
@@ -255,10 +327,7 @@ function SignupPage() {
                 placeholder="TRXXXXXXXXXXXXXXXXXXXXXXXX"
                 {...register('store.bank_account', {
                   required: t('signupPage.bankRequired'),
-                  validate: (value) => {
-                    const normalized = value.replace(/\s+/g, '').toUpperCase();
-                    return /^TR\d{24}$/.test(normalized) || t('signupPage.bankInvalid');
-                  },
+                  validate: (value) => isValidTrIban(value) || t('signupPage.bankInvalid'),
                 })}
                 className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
               />
@@ -271,7 +340,7 @@ function SignupPage() {
 
         <button
           type="submit"
-          disabled={isSubmitting}
+          disabled={isSubmitting || isRolesLoading || roles.length === 0}
           className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-brand-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-brand-600 disabled:cursor-not-allowed disabled:opacity-70"
         >
           {isSubmitting ? (
