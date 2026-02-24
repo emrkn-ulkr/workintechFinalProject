@@ -1,7 +1,5 @@
 ﻿# WT Store - Workintech Final Project
 
-Modern bir e-ticaret frontend uygulamasi. Proje, Workintech final gereksinimlerine uygun olarak React + Vite altyapisinda, mobile-first yaklasimla gelistirilmistir.
-
 ## Icerik
 
 - [Proje Ozeti](#proje-ozeti)
@@ -138,30 +136,6 @@ src/
 - Base URL: `https://workintech-fe-ecommerce.onrender.com`
 - Auth header formati: `Authorization: <token>` (`Bearer` prefix kullanilmiyor)
 
-## Deployment
-
-Proje statik olarak deploy edilebilir.
-
-- Vercel
-- Netlify
-- Render (static)
-
-Build ayari:
-
-- Build command: `npm run build`
-- Publish directory: `dist`
-
-Not: Repo icinde `netlify.toml`, `vercel.json` ve `render.yaml` dosyalari hazirdir.
-
-## Guvenlik ve Release Kontrolu
-
-Public yayin oncesi onerilen adimlar:
-
-1. `npm run check:release` calistir.
-2. `.env` ve benzeri secret dosyalarinin commit edilmedigini kontrol et.
-3. Production ortaminda `VITE_API_BASE_URL` degerini dogrula.
-4. HTTPS ve security header ayarlarinin aktif oldugunu dogrula.
-
 ## Postman
 
 Postman collection dosyasi:
@@ -187,10 +161,6 @@ Sadece demo backend/test amaclidir:
 ### Ayni kategori neden birden fazla gorunebiliyor?
 
 Backend tarafinda bazi kategoriler cinsiyete gore ayri kayit olarak tutulur (ornegin kadin/erkek ayni kategori adi). Bu nedenle listede benzer adlar gorulebilir.
-
-### Populer kategoriye tiklayinca neden bazen bos urun gelebiliyordu?
-
-Bazi kategori kayitlarinda urun sayisi `0` olabiliyor. Populer kategori secimi bu duruma gore duzenlendi ve urunu olan kategoriler onceliklendirildi.
 
 ---
 
